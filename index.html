@@ -1,0 +1,140 @@
+<!Doctype html>
+<html>
+    <head>
+        <title></title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <div class="bg-image h-100">
+        <div class="mask d-flex align-items-center h-100">
+            <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12">
+                    <div class="row col-12">
+                        <div class="col-md-3 col-sm-3"></div>
+                        <div class="col-md-6 col-sm-6 text-center">
+                            <input class="form-control" id="search-input" name="search" type="text" placeholder="type your words">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="data-table">
+                            <thead>
+                            <tr class="row">
+                                <th class="col-md-2" scope="col">Task</th>
+                                <th class="col-md-3" scope="col">Title</th>
+                                <th class="col-md-6" scope="col">description</th>
+                                <th class="col-md-1" scope="col">color</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+    </body>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script>
+        const indexUrl = 'http://localhost/index.php?';
+        const tableId = 'data-table';
+        let loadedData;
+        document.getElementById("search-input").addEventListener('input', function () {
+            if (this.value == '') {
+                displayData(loadedData);
+            } else {
+                applySearch(this.value);
+            }
+        });
+        loadData();
+        setInterval(loadData, 60000);
+        function loadData() {
+            fetch(indexUrl + new URLSearchParams({
+                name: 'getData',
+            }))
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    clearTable();
+                    loadedData = data;
+                    displayData(data);
+                })
+                .catch(error => {
+                    console.log('Error:', error);
+                });
+        }
+        function displayData(data) {
+            var tbodyRef = document.getElementById(tableId).getElementsByTagName('tbody')[0];
+            data.forEach(function (item) {
+                var newRow = tbodyRef.insertRow();
+                newRow.classList.add('row');
+                if (item.colorCode) {
+                    newRow.style.color = item.colorCode;
+                }
+
+                createCell(newRow, "col-md-2", document.createTextNode(item.task));
+                createCell(newRow, "col-md-3", document.createTextNode(item.title));
+                createCell(newRow, "col-md-6", createDescription(item));
+                createCell(newRow, "col-md-2", createColor(item));
+            });
+        }
+
+        function createColor(item) {
+            var colorSpan = document.createElement("span");
+            if (item.colorCode) {
+                colorSpan.innerText = item.colorCode;
+                colorSpan.style.backgroundColor = item.colorCode;
+                colorSpan.style.color = '#000';
+            } else {
+                colorSpan.innerText = 'no color';
+            }
+
+            return colorSpan;
+        }
+
+        function createDescription(item) {
+            var description = document.createElement("p");
+            description.innerText = item.description;
+            description.style.maxWidth = '40%';
+
+            return description;
+        }
+
+        function createCell(row, styles, value) {
+            var taskCell = row.insertCell();
+            taskCell.classList.add(styles)
+            taskCell.appendChild(value);
+        }
+
+        function clearTable() {
+            $('#'+tableId+' tbody').empty();
+        }
+
+        function applySearch(searchedText) {
+            let newData = [];
+            loadedData.forEach(function (item) {
+                if (item.task.search(searchedText) >= 0 ||
+                    item.title.search(searchedText) >= 0 ||
+                    item.description.search(searchedText) >= 0 ||
+                    item.colorCode.search(searchedText) >= 0
+                ) {
+                    newData.push(item)
+                }
+            });
+            clearTable();
+            displayData(newData);
+        }
+    </script>
+</html>
