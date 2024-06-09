@@ -1,0 +1,13 @@
+{
+  "name": "ahmadmhm/php",
+  "type": "project",
+  "description": "The done task by Ahmad.",
+  "keywords": [
+    "Vero",
+    "Task"
+  ],
+  "license": "MIT",
+  "require": {
+    "php": "^8.2"
+  }
+}
